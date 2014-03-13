@@ -8,6 +8,7 @@ using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using dBTutorial.Resources;
+/* Below are the newly added resources */
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
 using System.ComponentModel;
@@ -17,6 +18,11 @@ namespace dBTutorial
 {
     public partial class MainPage : PhoneApplicationPage, INotifyPropertyChanged
     {
+        /*In the MainPage.xaml.cs we create the Data Context. This more or less turns the 
+        * database into an object that can be used as other ojects instead of needing to 
+        * always interact with the database using querys like you would have to in javascript */
+
+        #region Initialize Collection
         // Data context for the local database
         private ToDoDataContext toDoDB;
 
@@ -37,8 +43,9 @@ namespace dBTutorial
                 }
             }
         }
+        #endregion
 
-        // Constructor
+        #region Constructor
         public MainPage()
         {
             InitializeComponent();
@@ -50,8 +57,12 @@ namespace dBTutorial
             // Data context and observable collection are children of the main page.
             this.DataContext = this;
         }
+        #endregion
 
-
+        #region Query the Database
+        /*This is where the magic happens. When this page is navigated to, this function 
+         * queries the database and stores the results in the observable collection.
+         * This is what works with the Data Binding Coded into the XAML */
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
             // Define the query to gather all of the to-do items.
@@ -64,12 +75,15 @@ namespace dBTutorial
             // Call the base method.
             base.OnNavigatedTo(e);
         }
+        #endregion 
 
+        #region Prep New ToDo For Db
         private void newToDoTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             // Clear the text box when it gets focus.
             newToDoTextBox.Text = String.Empty;
         }
+        
 
         private void newToDoAddButton_Click(object sender, RoutedEventArgs e)
         {
@@ -80,9 +94,12 @@ namespace dBTutorial
             ToDoItems.Add(newToDo);
 
             // Add a to-do item to the local database.
+            // Does not actually add to db until SubmitChanges is Called
             toDoDB.ToDoItems.InsertOnSubmit(newToDo);
         }
+        #endregion
 
+        #region Save Changes to the Db
         protected override void OnNavigatedFrom(System.Windows.Navigation.NavigationEventArgs e)
         {
             // Call the base method.
@@ -91,7 +108,9 @@ namespace dBTutorial
             // Save changes to the database.
             toDoDB.SubmitChanges();
         }
+        #endregion
 
+        #region Delete ToDo from Db
         private void deleteTaskButton_Click(object sender, RoutedEventArgs e)
         {
             // Cast parameter as a button.
@@ -115,7 +134,7 @@ namespace dBTutorial
                 this.Focus();
             }
         }
-
+        #endregion
 
         #region INotifyPropertyChanged Members
 
@@ -131,9 +150,8 @@ namespace dBTutorial
         }
         #endregion
     }
-    /*In the MainPage.xaml.cs we create a Data Context. This more or less turns the 
-     * database into an object that can be used as other ojects instead of needing to 
-     * always interact with the database using querys like you would have to in javascript */
+
+    #region Definition of the Db Table
     //Calls Base Constructor and declares the database table named ToDoItems
     public class ToDoDataContext : DataContext
     {
@@ -224,7 +242,8 @@ namespace dBTutorial
         // Version column aids update performance.
         [Column(IsVersion = true)]
         private Binary _version;
-
+    
+        
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -255,5 +274,5 @@ namespace dBTutorial
 
         #endregion
     }
-
+    #endregion
 }
